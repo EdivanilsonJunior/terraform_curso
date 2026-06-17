@@ -2,7 +2,15 @@
 cd /d C:\main
 
 git add .
-git commit -m "Atualizacao dos estudos Terraform"
+
+git diff --cached --quiet
+if %errorlevel%==0 (
+    echo Nenhuma alteracao encontrada.
+    pause
+    exit
+)
+
+git commit -m "Atualizacao automatica"
 git push
 
 pause
