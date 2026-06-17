@@ -1,0 +1,2 @@
+Mais usada ferramenta de infra como código(iaC) no mundo devOps
+Define, provisiona, mantem e versiona infraestrutura
