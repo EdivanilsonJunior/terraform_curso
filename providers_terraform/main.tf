@@ -11,5 +11,12 @@ terraform {
     required_providers {
       
     }
-}
 
+    backend "s3" {
+        bucket         = "terraform-curso-2024"
+        key            = "terraform.tfstate"
+        region         = "us-east-1"
+        dynamodb_table = "terraform-curso-lock"
+        encrypt        = true
+        }
+}
