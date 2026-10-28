@@ -1,0 +1,117 @@
+1. Sincronização e Atualização de Código
+
+	-- GIT FETCH --
+
+Resumo: Baixa as atualizações (commits, arquivos e referências) do repositório remoto sem mesclá-las automaticamente com o código local atual. É a forma mais segura de ver o que há de novo antes de aplicar no servidor.
+
+Parâmetros comuns:
+
+--all: Busca atualizações de todos os repositórios remotos configurados.
+
+--prune ou -p: Remove referências locais a branches que já foram apagados no servidor remoto (mantém o ambiente limpo).
+
+
+	-- GIT PULL --
+
+Resumo: Executa um git fetch seguido imediatamente de um git merge. Atualiza o branch atual com as novidades do servidor. Em produção, geralmente é feito em branches estáveis (como main ou production).
+
+Parâmetros comuns:
+
+--rebase: Aplica suas mudanças locais no topo das mudanças que vieram do servidor, evitando commits de merge desnecessários.
+
+--ff-only: Só permite a atualização se puder ser feita no modo "fast-forward" (sem criar commit de merge). Se houver divergência, ele falha, prevenindo conflitos no servidor.
+
+
+	-- GIT PUSH --
+
+Resumo: Envia seus commits locais para o repositório remoto.
+
+Parâmetros comuns:
+
+--force ou -f: Sobrescreve o histórico remoto (extremamente perigoso e geralmente bloqueado em branches de produção/homologação).
+
+--force-with-lease: Uma alternativa mais segura ao --force, que só sobrescreve se ninguém mais tiver atualizado o branch remoto nesse meio tempo.
+
+--tags: Envia também as tags locais para o servidor.
+
+2. Navegação e Gerenciamento de Branches
+git switch (ou o clássico git checkout)
+
+Resumo: Alterna entre os branches. É usado para mudar do branch de desenvolvimento para o de homologação ou produção.
+
+Parâmetros comuns:
+
+-c (no switch) ou -b (no checkout): Cria um novo branch e já muda para ele (útil para criar um branch de hotfix a partir da master).
+
+
+ 	-- GIT MERGE --
+
+Resumo: Mescla o histórico de um branch no branch atual. Usado para trazer o código aprovado em homologação para o branch de produção.
+
+Parâmetros comuns:
+
+--no-ff: Força a criação de um commit de merge mesmo que um "fast-forward" seja possível. Isso é vital em produção para manter o histórico de que uma feature ou release foi integrada, facilitando reverter a entrega inteira se der erro.
+
+--abort: Cancela um merge que gerou conflitos e devolve o repositório ao estado anterior.
+
+3. Releases e Versionamento
+
+ 	-- GIT TAG --
+
+Resumo: Cria uma marcação permanente em um commit específico. Usado para marcar versões exatas que foram para produção (ex: v1.0.0, v2.3.1).
+
+Parâmetros comuns:
+
+-a: Cria uma tag anotada (inclui autor, data e mensagem, ideal para produção). Exemplo: git tag -a v1.0.0 -m "Release da v1.0.0".
+
+-d: Deleta uma tag local.
+
+4. Resolução de Problemas e Correções (Hotfixes)
+
+	-- GIT REVERT --
+
+Resumo: Desfaz as alterações de um commit específico criando um novo commit com as mudanças inversas. É o único comando seguro para desfazer erros em branches públicos (como produção), pois não reescreve o histórico.
+
+Parâmetros comuns:
+
+--no-commit ou -n: Desfaz as mudanças de um commit e as coloca em "staging", mas não cria o commit de reversão automaticamente. Útil para revisar antes de aplicar.
+
+	--GIT CHERRY-PICK --
+
+Resumo: Pega um commit específico de outro branch e o aplica no branch atual. Muito usado quando um bug crítico é corrigido no branch de desenvolvimento e você precisa levar apenas aquele commit de correção direto para o branch de produção, sem levar o resto do código incompleto.
+
+Parâmetros comuns:
+
+-x: Adiciona uma linha na mensagem do novo commit informando qual foi o hash do commit original, excelente para rastreabilidade.
+
+--no-commit ou -n: Aplica as mudanças do commit selecionado, mas pausa antes de commitar.
+
+	-- GIT STASH --
+
+Resumo: Guarda temporariamente modificações locais que ainda não foram commitadas, deixando sua área de trabalho limpa. Útil se você está testando algo no servidor e precisa mudar urgentemente de branch para aplicar um hotfix.
+
+Parâmetros comuns:
+
+push -m "mensagem": Salva as mudanças com uma mensagem para facilitar a identificação depois.
+
+pop: Recupera a última mudança guardada e a remove da lista do stash.
+
+list: Mostra tudo que está guardado temporariamente.
+
+5. Auditoria e Rastreabilidade
+
+	-- GIT LOG --
+
+Resumo: Exibe o histórico de commits. Fundamental para descobrir quando um bug foi introduzido ou o que entrou no último deploy.
+
+Parâmetros comuns:
+
+--oneline: Mostra cada commit resumido em uma única linha (hash e mensagem).
+
+--graph: Exibe o histórico em formato de árvore, facilitando ver onde ocorreram os merges.
+
+-p: Mostra o "diff" (o código exato que foi adicionado/removido) de cada commit.
+
+	-- GIT STATUS --
+
+Resumo: Mostra o estado atual da árvore de trabalho (arquivos modificados, qual branch está ativo e se ele está sincronizado com o remoto). Sempre executado antes de qualquer outra ação para garantir que o ambiente está no estado esperado.
