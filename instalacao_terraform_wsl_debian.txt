@@ -1,0 +1,107 @@
+MANUAL: INSTALACAO DO TERRAFORM NO WSL COM DEBIAN 13
+
+Este passo a passo descreve como corrigir a configuracao dos repositorios APT
+do Debian 13 (Trixie) e instalar o Terraform pelo repositorio oficial da
+HashiCorp.
+
+Execute os comandos dentro do terminal do Debian no WSL, nao no PowerShell.
+
+
+1. CONFIRMAR A VERSAO DO DEBIAN
+
+cat /etc/os-release
+
+Confirme que a distribuicao e Debian 13 e que o codinome e trixie.
+
+
+2. CONFIGURAR OS REPOSITORIOS DO DEBIAN
+
+Em instalacoes recentes do Debian, o arquivo /etc/apt/sources.list pode nao
+existir. Os repositorios podem ser configurados em arquivos .sources dentro
+de /etc/apt/sources.list.d/.
+
+Se /etc/apt/sources.list.d/ estiver vazio, crie a configuracao oficial do
+Debian 13 com o comando abaixo:
+
+sudo tee /etc/apt/sources.list.d/debian.sources >/dev/null <<'EOF'
+Types: deb
+URIs: http://deb.debian.org/debian
+Suites: trixie trixie-updates
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+Types: deb
+URIs: http://security.debian.org/debian-security
+Suites: trixie-security
+Components: main contrib non-free non-free-firmware
+Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+EOF
+
+Atualize a lista de pacotes:
+
+sudo apt update
+
+Se esse comando terminar sem erros, instale as ferramentas necessarias:
+
+sudo apt install -y wget gpg
+
+
+3. ADICIONAR A CHAVE DE ASSINATURA DA HASHICORP
+
+Baixe a chave oficial e salve-a no formato de chaveiro usado pelo APT:
+
+wget -qO- https://apt.releases.hashicorp.com/gpg \
+  | sudo gpg --dearmor --yes -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+Confira a impressao digital da chave:
+
+gpg --show-keys --with-fingerprint /usr/share/keyrings/hashicorp-archive-keyring.gpg
+
+A impressao digital deve ser:
+
+D55C 0D1A C78A 8D81 26CB 631C FC9C A96A CA02 6560
+
+Nao continue se a impressao digital for diferente.
+
+
+4. ADICIONAR O REPOSITORIO DO TERRAFORM
+
+Configure o repositorio da HashiCorp para Debian 13:
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com trixie main" \
+  | sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+Confirme que a linha contem o caminho correto em signed-by:
+
+cat /etc/apt/sources.list.d/hashicorp.list
+
+
+5. ATUALIZAR E INSTALAR O TERRAFORM
+
+Atualize os indices do APT e instale o pacote:
+
+sudo apt update
+sudo apt install -y terraform
+
+Confirme que a instalacao terminou corretamente:
+
+terraform -version
+
+
+SOLUCAO DOS ERROS ENCONTRADOS
+
+- "grep: /etc/apt/sources.list: No such file or directory":
+  No Debian 13 isso pode ser normal. Verifique tambem
+  /etc/apt/sources.list.d/. Se nao houver fontes configuradas, siga a etapa 2.
+
+- "Unable to locate package wget" ou "Unable to locate package terraform":
+  O APT nao tem indices de pacotes disponiveis. Configure as fontes do Debian
+  e execute sudo apt update antes de instalar os pacotes.
+
+- "Missing key ...", "repository ... is not signed" ou falha de verificacao
+  da assinatura do repositorio HashiCorp:
+  Instale novamente a chave conforme a etapa 3, confira a impressao digital e
+  confirme que hashicorp.list aponta para o arquivo indicado em signed-by.
+  Depois execute sudo apt update novamente.
+
+Nao desative a verificacao de assinaturas do APT para contornar esses erros.
